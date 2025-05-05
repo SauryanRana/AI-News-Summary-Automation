@@ -1,0 +1,384 @@
+{
+  "name": "AI news summary",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6fafe2bf-197b-49f6-a56b-31044190bc8b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything?q=artificial+intelligence&sortBy=publishedAt&language=en&apiKey=29bfc2f1daa145d0bf6ed44d3a07268a",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3c603db6-5b68-46ba-a2f2-afb5d6cbbb3b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items[0].json.articles.map(article => {\n  return {\n    json: article\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        0
+      ],
+      "id": "4b715ef0-1edb-483e-ba1e-d735cbef19e5",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Summarize this news article in 2 sentences:\n\nTitle: {{$json[\"title\"]}}\nDescription: {{$json[\"description\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        920,
+        -20
+      ],
+      "id": "34e1dbc3-8595-4b0d-acfe-04e274ca8ffb",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "ca6TjWRIBezZY3F1",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        740,
+        0
+      ],
+      "id": "8d02cd44-8389-4873-9494-57a02ee49fa0",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        940,
+        160
+      ],
+      "id": "ca62de5b-4327-4f8f-9169-78660a2249dd"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16vpdkcdJng-dht4Kuo0oD9emu64LAi7fSQT2FgWvCNM",
+          "mode": "list",
+          "cachedResultName": "NewsSummaries",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16vpdkcdJng-dht4Kuo0oD9emu64LAi7fSQT2FgWvCNM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16vpdkcdJng-dht4Kuo0oD9emu64LAi7fSQT2FgWvCNM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Summary": "={{ $('Code').item.json.description }}",
+            "PublishedAt": "={{$json[\"publishedAt\"]}} {{ $('Code').item.json.publishedAt }}",
+            "Source": "={{$json[\"source\"][\"name\"]}}",
+            "Title": "={{ $json.title }}",
+            "URL": "={{ $('Code').item.json.url }}"
+          },
+          "matchingColumns": [
+            "Source"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PublishedAt",
+              "displayName": "PublishedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1500,
+        -20
+      ],
+      "id": "d80ba1b5-7bca-49a7-ba36-bccb1487d8dc",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fGCdOoCimDHmLR5F",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e07ff841-3f8c-4dbd-9c37-327c9fc3880c",
+              "name": "title",
+              "value": "={{ $('Loop Over Items').item.json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "dc58ffb3-3898-456b-887c-eb8db1df3606",
+              "name": "description",
+              "value": "={{ $('Loop Over Items').item.json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "5cede81e-0439-4b6d-82b5-c84a800e7f5e",
+              "name": "source",
+              "value": "={{ $('Loop Over Items').item.json.source }}",
+              "type": "object"
+            },
+            {
+              "id": "7be96bb3-44b2-4865-b77d-13951274c309",
+              "name": "url",
+              "value": "={{ $('Loop Over Items').item.json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "e0e2154b-6f2c-40a8-ac43-a6d81484cb70",
+              "name": "publishedAt",
+              "value": "={{ $('Loop Over Items').item.json.publishedAt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1300,
+        -20
+      ],
+      "id": "b686b5da-75d2-47ea-9098-6891911c9dd0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "unillm464@gmail.com",
+        "subject": "={{ $('Loop Over Items').item.json.title }}",
+        "message": "=<html>\n  <body style=\"font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;\">\n    <div style=\"max-width: 600px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);\">\n      \n      <h2 style=\"color: #333333; border-bottom: 1px solid #eee; padding-bottom: 10px;\">🧠 AI News Summary</h2>\n      \n      <h3 style=\"color: #1a73e8;\">{{ $('Loop Over Items').item.json.title }}</h3>\n\n      <img src=\"{{ $('Loop Over Items').item.json.urlToImage }}\" alt=\"Article Image\"\n           style=\"width: 100%; max-width: 300px; height: auto; display: block; margin: 10px 0; border-radius: 6px;\" />\n\n      <p style=\"color: #555555; line-height: 1.6;\">\n        {{ $('Loop Over Items').item.json.description }}\n      </p>\n\n      <a href=\"{{ $('Loop Over Items').item.json.url }}\"\n         style=\"display: inline-block; margin-top: 10px; background-color: #1a73e8; color: #ffffff; padding: 10px 15px; text-decoration: none; border-radius: 4px;\">\n         Read Full Article\n      </a>\n\n      <p style=\"font-size: 12px; color: #999999; margin-top: 20px;\">\n        Source: {{ $('Loop Over Items').item.json.source.name }}<br>\n        Published at: {{ $('Loop Over Items').item.json.publishedAt }}\n      </p>\n    </div>\n  </body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1720,
+        -20
+      ],
+      "id": "13618632-faa3-4cc5-a356-93e0f4b6d8ed",
+      "name": "Gmail",
+      "webhookId": "37dd8a0c-c626-4bca-aef6-d0cbda33b73b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oLEN43w8ZwlPijzH",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d75d709b-ab69-4304-bcf5-0c821f3cc1d9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f6f4c6ead845ddf5e7a29c5b44f3c5309fff3b34d562ad9d3613561c32671b89"
+  },
+  "id": "r5LolS1dWMVm4dDQ",
+  "tags": []
+}
