@@ -6,7 +6,7 @@ This repository contains an automated workflow built using [n8n](https://n8n.io/
 
 ## 📌 Features
 
-- ⏰ Automatically triggers every 3 hours
+- ⏰ Automatically triggers every 24 hours
 - 🌐 Uses NewsAPI to fetch AI-related news
 - ✂️ Summarizes articles using OpenAI (GPT-3.5-turbo)
 - 📊 Saves data to Google Sheets
