@@ -47,11 +47,3 @@ This repository contains an automated workflow built using [n8n](https://n8n.io/
 
 ---
 
-## 📁 Files
-
-```bash
-.
-├── AI_news_summary.json      # Exported n8n workflow
-├── images/
-│   └── workflow.png          # Visual diagram of the workflow
-└── README.md                 # You're here!
